@@ -24,8 +24,9 @@ prompt_template = PromptTemplate(
 
 def generate_filter(user_input):
     llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo",
-                    temperature=0.1,
+                    temperature=0,
                     keep_alive=0,
+                    num_predict=700
                     )
     # 創建 LLMChain
     llm_chain = LLMChain(llm=llm, prompt=prompt_template)
@@ -34,8 +35,4 @@ def generate_filter(user_input):
         "reason" : user_input
     })
     return filtered_input
-user_input="""
-text: "事故發生緣由：
-被告徐金坤受僱於被告尤彰寶即典坤企業行擔任大貨車司機職務。於民國109年4月7日8時16分許，被告徐金坤駕駛車牌號碼000-00號營業用大貨車，在屏東縣○○鎮○○路000號旁倒車欲駛入南灣路面，被告徐金坤應注意汽車倒車時，應顯示倒車燈光或手勢後，謹慎緩慢後倒，並應注意其他車輛及行人，且大型汽車須派人在車後指引，如無人在車後指引時，應先測明車後有足夠之地位，並促使行人及車輛讓避，以避免危險或交通事故之發生。而依當時天候良好、日間自然光線、柏油路面缺陷、無障礙物、視距良好、無號誌等情況，無不能注意之情形，竟疏未注意車後方往來人車之動向且無人在後指揮，即貿然倒車，致撞擊車後之機車道上，由原告所騎乘516-ENL普通重型機車，致原告人車倒地。"
-"""
-print(generate_filter(user_input))
+#print(generate_filter(user_input))

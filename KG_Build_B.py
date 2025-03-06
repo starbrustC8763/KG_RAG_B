@@ -1,5 +1,6 @@
 from neo4j import GraphDatabase
 from dotenv import load_dotenv
+from input_filter import generate_filter
 import pandas as pd
 import os
 import re
@@ -102,6 +103,18 @@ def create_sim_input_parts(tx, sim_input_value, parts_list, case_id):
                 sim_input_value=sim_input_value, part=part, idx=idx, case_id = case_id
             )   
             print(f"連接模擬輸入節點 {sim_input_value} 與子節點 (value={part}, part_index={idx})")
+        elif idx == 4:
+            tx.run(
+                "CREATE (p:案件屬性 {text: $part, part_index: $idx, case_id: $case_id})",
+                part=part, idx=idx, case_id = case_id
+            )
+            print(f"建立案件屬性節點：value={part}, part_index={idx}")
+            tx.run(
+                "MATCH (m:案件 {case_id: $case_id}), (p:案件屬性 {text: $part, part_index: $idx,case_id: $case_id}) "
+                "MERGE (m)-[:屬性]->(p)",
+                part=part, idx=idx, case_id = case_id
+            )   
+            print(f"連接案件節點 {case_id} 與子節點 (value={part}, part_index={idx})")
 
 def create_sim_output_parts(tx, sim_output_value, parts_list, case_id):
     # 建立每個模擬輸出子節點並連接到原節點
@@ -164,7 +177,8 @@ def delete_all_nodes(tx):
 
 def parse_sim_input(sim_input):
     match = re.search(r'一、(.*?)二、(.*?)三、(.*)', sim_input, re.S)
-    parsed_input=[match.group(1).strip(),match.group(2).strip(),match.group(3).strip()]
+    filtered_input=generate_filter(match.group(1).strip())
+    parsed_input=[match.group(1).strip(),match.group(2).strip(),match.group(3).strip(),filtered_input]
     return parsed_input
 
 def parse_sim_output(sim_output):
