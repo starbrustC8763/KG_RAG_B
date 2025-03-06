@@ -149,13 +149,18 @@ def get_case_type(user_input):
     score={"單純原被告各一":0,"數名原告":0,"數名被告":0,"原被告皆數名":0,"§187未成年案型":0,"§188僱用人案型":0,"§190動物案型":0}
     filtered_input = generate_filter(user_input)
     l = query_faiss(filtered_input)
+    sum=0
+    for i in range(5):
+        sum += l[i]["distance"]
+    avg=sum/5
     for i in range(5):
         print(f"id:{l[i]["id"]}")
         print(f"text:{l[i]["text"]}")
-        print(f"dist:{l[i]["distance"]}")
+        dist=l[i]["distance"]
+        print(f"dist:{dist}")
         case_type=get_type_for_case(l[i]["id"])
         print(f"type:{case_type}")
-        score[case_type] += 200 - l[i]["distance"]
+        score[case_type] += avg - dist
     max_key = max(score, key=score.get)
     return max_key
-print(get_case_type(user_input))
+#print(get_case_type(user_input))
