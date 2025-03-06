@@ -66,32 +66,82 @@ def link_sim_output_to_case(tx, sim_output, case_id):
 def create_sim_input_parts(tx, sim_input_value, parts_list, case_id):
     # 依序建立每個子節點，並用「包含」關係連接到模擬輸入節點
     for idx, part in enumerate(parts_list, start=1):
-        tx.run(
-            "CREATE (p:模擬輸入子 {text: $part, part_index: $idx, case_id: $case_id})",
-            part=part, idx=idx, case_id = case_id
-        )
-        print(f"建立模擬輸入子節點：value={part}, part_index={idx}")
-        tx.run(
-            "MATCH (m:模擬輸入 {text: $sim_input_value,case_id: $case_id}), (p:模擬輸入子 {text: $part, part_index: $idx,case_id: $case_id}) "
-            "MERGE (m)-[:包含]->(p)",
-            sim_input_value=sim_input_value, part=part, idx=idx, case_id = case_id
-        )
-        print(f"連接模擬輸入節點 {sim_input_value} 與子節點 (value={part}, part_index={idx})")
+        if idx == 1:
+            tx.run(
+                "CREATE (p:事故發生緣由 {text: $part, part_index: $idx, case_id: $case_id})",
+                part=part, idx=idx, case_id = case_id
+            )
+            print(f"建立模擬輸入事故發生緣由節點：value={part}, part_index={idx}")
+            tx.run(
+                "MATCH (m:模擬輸入 {text: $sim_input_value,case_id: $case_id}), (p:事故發生緣由 {text: $part, part_index: $idx,case_id: $case_id}) "
+                "MERGE (m)-[:包含]->(p)",
+                sim_input_value=sim_input_value, part=part, idx=idx, case_id = case_id
+            )   
+            print(f"連接模擬輸入節點 {sim_input_value} 與子節點 (value={part}, part_index={idx})")
+        elif idx == 2:
+            tx.run(
+                "CREATE (p:受傷情形 {text: $part, part_index: $idx, case_id: $case_id})",
+                part=part, idx=idx, case_id = case_id
+            )
+            print(f"建立模擬輸入受傷情形節點：value={part}, part_index={idx}")
+            tx.run(
+                "MATCH (m:模擬輸入 {text: $sim_input_value,case_id: $case_id}), (p:受傷情形 {text: $part, part_index: $idx,case_id: $case_id}) "
+                "MERGE (m)-[:包含]->(p)",
+                sim_input_value=sim_input_value, part=part, idx=idx, case_id = case_id
+            )   
+            print(f"連接模擬輸入節點 {sim_input_value} 與子節點 (value={part}, part_index={idx})")
+        elif idx == 3:
+            tx.run(
+                "CREATE (p:賠償根據 {text: $part, part_index: $idx, case_id: $case_id})",
+                part=part, idx=idx, case_id = case_id
+            )
+            print(f"建立模擬輸入賠償根據節點：value={part}, part_index={idx}")
+            tx.run(
+                "MATCH (m:模擬輸入 {text: $sim_input_value,case_id: $case_id}), (p:賠償根據 {text: $part, part_index: $idx,case_id: $case_id}) "
+                "MERGE (m)-[:包含]->(p)",
+                sim_input_value=sim_input_value, part=part, idx=idx, case_id = case_id
+            )   
+            print(f"連接模擬輸入節點 {sim_input_value} 與子節點 (value={part}, part_index={idx})")
 
 def create_sim_output_parts(tx, sim_output_value, parts_list, case_id):
     # 建立每個模擬輸出子節點並連接到原節點
     for idx, part in enumerate(parts_list, start=1):
-        tx.run(
-            "CREATE (p:模擬輸出子 {text: $part, part_index: $idx, case_id: $case_id})",
-            part=part, idx=idx, case_id = case_id
-        )
-        print(f"建立模擬輸出子節點：value={part}, part_index={idx}")
-        tx.run(
-            "MATCH (m:模擬輸出 {text: $sim_output_value, case_id: $case_id}), (p:模擬輸出子 {text: $part, part_index: $idx, case_id: $case_id}) "
-            "MERGE (m)-[:包含]->(p)",
-            sim_output_value=sim_output_value, part=part, idx=idx, case_id = case_id
-        )
-        print(f"連接模擬輸出節點 {sim_output_value} 與子節點 (value={part}, part_index={idx})")
+        if idx == 1:
+            tx.run(
+                "CREATE (p:事實 {text: $part, part_index: $idx, case_id: $case_id})",
+                part=part, idx=idx, case_id = case_id
+            )
+            print(f"建立模擬輸出事實節點：value={part}, part_index={idx}")
+            tx.run(
+                "MATCH (m:模擬輸出 {text: $sim_output_value, case_id: $case_id}), (p:事實 {text: $part, part_index: $idx, case_id: $case_id}) "
+                "MERGE (m)-[:包含]->(p)",
+                sim_output_value=sim_output_value, part=part, idx=idx, case_id = case_id
+            )
+            print(f"連接模擬輸出節點 {sim_output_value} 與子節點 (value={part}, part_index={idx})")
+        elif idx == 2:
+            tx.run(
+                "CREATE (p:法條 {text: $part, part_index: $idx, case_id: $case_id})",
+                part=part, idx=idx, case_id = case_id
+            )
+            print(f"建立模擬輸出子節點：value={part}, part_index={idx}")
+            tx.run(
+                "MATCH (m:模擬輸出 {text: $sim_output_value, case_id: $case_id}), (p:法條 {text: $part, part_index: $idx, case_id: $case_id}) "
+                "MERGE (m)-[:包含]->(p)",
+                sim_output_value=sim_output_value, part=part, idx=idx, case_id = case_id
+            )
+            print(f"連接模擬輸出節點 {sim_output_value} 與子節點 (value={part}, part_index={idx})")
+        elif idx == 3:
+            tx.run(
+                "CREATE (p:賠償 {text: $part, part_index: $idx, case_id: $case_id})",
+                part=part, idx=idx, case_id = case_id
+            )
+            print(f"建立模擬輸出子節點：value={part}, part_index={idx}")
+            tx.run(
+                "MATCH (m:模擬輸出 {text: $sim_output_value, case_id: $case_id}), (p:賠償 {text: $part, part_index: $idx, case_id: $case_id}) "
+                "MERGE (m)-[:包含]->(p)",
+                sim_output_value=sim_output_value, part=part, idx=idx, case_id = case_id
+            )
+            print(f"連接模擬輸出節點 {sim_output_value} 與子節點 (value={part}, part_index={idx})")
 
 # 函數：根據試算表中的資料建立節點與關係
 def create_case_data(tx, case_type, sim_input, sim_output, case_id):
