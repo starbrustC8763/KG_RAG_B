@@ -196,9 +196,9 @@ if __name__ == "__main__":
         session.execute_write(delete_all_nodes)
         case_id = 1
         for index, row in df.iterrows():
-            case_type = row[0]
-            sim_input = row[1]
-            sim_output = row[2]
+            case_type = row.iloc[0]
+            sim_input = row.iloc[1]
+            sim_output = row.iloc[2]
             session.execute_write(create_case_data, case_type, sim_input, sim_output, case_id)
             case_id += 1
             
