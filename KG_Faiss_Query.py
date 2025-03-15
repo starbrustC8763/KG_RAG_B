@@ -148,7 +148,7 @@ text: "事故發生緣由:
 def get_case_type(user_input):
     score={"單純原被告各一":0,"數名原告":0,"數名被告":0,"原被告皆數名":0,"§187未成年案型":0,"§188僱用人案型":0,"§190動物案型":0}
     filtered_input = generate_filter(user_input)
-    top_k=1
+    top_k=3
     l = query_faiss(filtered_input,top_k=top_k)
     for i in range(top_k):
         #print(f"id:{l[i]["id"]}")

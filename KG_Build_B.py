@@ -4,6 +4,9 @@ from input_filter import generate_filter
 import pandas as pd
 import os
 import re
+import time
+
+
 # 載入 .env 檔案中的環境變數
 load_dotenv()
 
@@ -188,6 +191,7 @@ def parse_sim_output(sim_output):
     parsed_input=[match.group(1).strip(),match.group(2).strip(),comp_match]
     return parsed_input
 
+start_time = time.time()  # 記錄開始時間
 if __name__ == "__main__":
     # 載入 Excel 檔案，假設檔案中有欄位名稱：案件類型、模擬輸入、模擬輸出
     df = pd.read_excel("data.xlsx")  # 請將 your_file.xlsx 換成你的檔案名稱
@@ -203,3 +207,7 @@ if __name__ == "__main__":
             case_id += 1
             
     driver.close()
+
+end_time = time.time()  # 記錄結束時間
+execution_time = end_time - start_time  # 計算執行時間
+print(f"執行時間: {execution_time}")

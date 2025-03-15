@@ -7,7 +7,7 @@ def generate_filter(user_input):
     return filted
 
 def get_187(user_input):
-    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo",
+    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-q8_0",
                     temperature=0,
                     keep_alive=0,
                     )
@@ -24,6 +24,7 @@ def get_187(user_input):
     備註:
     如果未提及被告的年齡就判斷為否
     你只需要告訴我被告是不是未成年人，請依照格式輸出，不要輸出其他多餘的內容
+    輸出時記得按照格式在是或否前加上:"被告是否為未成年人"
     """
     )
     llm_chain = LLMChain(llm=llm, prompt=prompt_template)
@@ -35,7 +36,7 @@ def get_187(user_input):
     return filtered_input
 
 def get_188(user_input):
-    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo",
+    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",
                     temperature=0,
                     keep_alive=0,
                     )
@@ -64,7 +65,7 @@ def get_188(user_input):
     return filtered_input
 
 def get_190(user_input):
-    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo",
+    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",
                     temperature=0,
                     keep_alive=0,
                     )
@@ -81,6 +82,7 @@ def get_190(user_input):
     備註:
     如果未提及車禍是否由動物造成就判斷為否
     你只需要告訴我車禍是否由動物造成，請依照格式輸出，不要輸出其他多餘的內容
+    輸出時記得按照格式在是或否前加上:"車禍是否由動物造成"
     """
     )
     llm_chain = LLMChain(llm=llm, prompt=prompt_template)
@@ -92,7 +94,7 @@ def get_190(user_input):
     return filtered_input
 
 def get_people(user_input):
-    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo",
+    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",
                     temperature=0,
                     keep_alive=0,
                     )
