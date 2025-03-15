@@ -7,7 +7,7 @@ def generate_filter(user_input):
     return filted
 
 def get_187(user_input):
-    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-q8_0",
+    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",
                     temperature=0,
                     keep_alive=0,
                     )
