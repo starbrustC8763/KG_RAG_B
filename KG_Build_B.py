@@ -2,7 +2,6 @@ from neo4j import GraphDatabase
 from dotenv import load_dotenv
 from input_filter import generate_filter
 from define_case_type import get_case_type
-from KG_Embedding_B import add_embeddings_to_nodes
 import pandas as pd
 import os
 import re
@@ -76,31 +75,31 @@ def create_sim_input_parts(tx, sim_input_value, parts_list, case_id):
                 "CREATE (p:事故發生緣由 {text: $part, part_index: $idx, case_id: $case_id})",
                 part=part, idx=idx, case_id = case_id
             )
-            print(f"建立模擬輸入事故發生緣由節點：value={part}, part_index={idx}")
+            print(f"建立模擬輸入事故發生緣由節點：=part_index={idx}")
             tx.run(
                 "MATCH (m:模擬輸入 {text: $sim_input_value,case_id: $case_id}), (p:事故發生緣由 {text: $part, part_index: $idx,case_id: $case_id}) "
                 "MERGE (m)-[:包含]->(p)",
                 sim_input_value=sim_input_value, part=part, idx=idx, case_id = case_id
             )   
-            print(f"連接模擬輸入節點 {case_id} 與子節點 (value={part}, part_index={idx})")
+            print(f"連接模擬輸入節點 {case_id} 與子節點 part_index={idx}")
         elif idx == 2:
             tx.run(
                 "CREATE (p:受傷情形 {text: $part, part_index: $idx, case_id: $case_id})",
                 part=part, idx=idx, case_id = case_id
             )
-            print(f"建立模擬輸入受傷情形節點：value={part}, part_index={idx}")
+            print(f"建立模擬輸入受傷情形節點：part_index={idx}")
             tx.run(
                 "MATCH (m:模擬輸入 {text: $sim_input_value,case_id: $case_id}), (p:受傷情形 {text: $part, part_index: $idx,case_id: $case_id}) "
                 "MERGE (m)-[:包含]->(p)",
                 sim_input_value=sim_input_value, part=part, idx=idx, case_id = case_id
             )   
-            print(f"連接模擬輸入節點 {case_id} 與子節點 (value={part}, part_index={idx})")
+            print(f"連接模擬輸入節點 {case_id} 與子節點 part_index={idx}")
         elif idx == 3:
             tx.run(
                 "CREATE (p:賠償根據 {text: $part, part_index: $idx, case_id: $case_id})",
                 part=part, idx=idx, case_id = case_id
             )
-            print(f"建立模擬輸入賠償根據節點：value={part}, part_index={idx}")
+            print(f"建立模擬輸入賠償根據節點：part_index={idx}")
             tx.run(
                 "MATCH (m:模擬輸入 {text: $sim_input_value,case_id: $case_id}), (p:賠償根據 {text: $part, part_index: $idx,case_id: $case_id}) "
                 "MERGE (m)-[:包含]->(p)",
@@ -208,7 +207,7 @@ if __name__ == "__main__":
             case_id += 1
             
     driver.close()
-    add_embeddings_to_nodes()
+    #add_embeddings_to_nodes()
 
 end_time = time.time()  # 記錄結束時間
 execution_time = end_time - start_time  # 計算執行時間
