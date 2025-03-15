@@ -1,8 +1,10 @@
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_ollama import OllamaLLM
-
-def generate_filter(user_input):
+import re
+def generate_filter(sim_input):
+    match = re.search(r'一、(.*?)二、(.*?)三、(.*)', sim_input, re.S)
+    user_input = match.group(1).strip()
     filted=get_people(user_input)+"\n"+get_187(user_input)+"\n"+get_188(user_input)+"\n"+get_190(user_input)+"\n"
     return filted
 
@@ -104,8 +106,8 @@ def get_people(user_input):
         input_variables=["reason"],
         template="""
     請你幫我從以下車禍案件的事故詳情中提取並列出所有原告和被告的姓名，並只能用以下格式輸出:
-    原告:
-    被告:
+    原告:原告1,原告2...
+    被告:被告1,被告2...
 
     以下是本起車禍的事故詳情：
     {reason}

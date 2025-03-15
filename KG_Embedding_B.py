@@ -7,9 +7,9 @@ import os
 load_dotenv()
 
 # 使用環境變數
-uri = os.getenv("NEO4J_URI_B")
+uri = os.getenv("NEO4J_URI_A")
 username = os.getenv("NEO4J_USERNAME")
-password = os.getenv("NEO4J_PASSWORD")
+password = os.getenv("NEO4J_PASSWORD_A")
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # 加載嵌入模型
