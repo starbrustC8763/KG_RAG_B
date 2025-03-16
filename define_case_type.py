@@ -15,8 +15,8 @@ def get_case_type(case_info):
     plaintiffs = [name.strip() for name in plaintiffs]
     defendants = [name.strip() for name in defendants]
 
-    print("原告:", plaintiffs)
-    print("被告:", defendants)
+    #print("原告:", plaintiffs)
+    #print("被告:", defendants)
 
     case_type=""
     p=len(plaintiffs)
