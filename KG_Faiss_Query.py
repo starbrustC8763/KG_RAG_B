@@ -1,6 +1,5 @@
 from neo4j import GraphDatabase
 from sentence_transformers import SentenceTransformer
-from input_filter import generate_filter
 import numpy as np
 import faiss
 import os
@@ -13,7 +12,7 @@ load_dotenv()
 # Neo4j 配置
 uri = os.getenv("NEO4J_URI_B")
 username = os.getenv("NEO4J_USERNAME")
-password = os.getenv("NEO4J_PASSWORD")
+password = os.getenv("NEO4J_PASSWORD_B")
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # 索引保存路徑
@@ -114,50 +113,8 @@ def get_type_for_case(case_id):
         case_type = session.execute_read(find_case_type_by_case_id, case_id)
         return case_type
 
-def fetch_statutes_and_explanations(statutes: List[str]) -> List[Dict[str, str]]:
-    """
-    查詢指定法條的條文內容及其口語化解釋。
-
-    Args:
-        statutes (List[str]): 要查詢的法條 ID 列表。
-
-    Returns:
-        List[Dict[str, str]]: 包含法條 ID、條文和口語化解釋的字典列表。
-    """
-    query = """
-    MATCH (s:Statute)-[:口語化解釋]->(e:Explanation)
-    WHERE s.id IN $statutes
-    RETURN s.id AS statute_id, s.text AS statute_text, e.text AS explanation_text
-    """
-    with driver.session() as session:
-        results = session.run(query, statutes=statutes)
-        return [
-            {
-                "statute_id": record["statute_id"],
-                "statute_text": record["statute_text"],
-                "explanation_text": record["explanation_text"]
-            }
-            for record in results
-        ]
-
 user_input="""
 text: "事故發生緣由:
  原告於106年8月5日凌晨騎乘車牌號碼000-000號普通重型機車（下稱A車），沿臺北市松山區南京東路5段由西往東方向之第4車道行駛，因訴外人康家誠將車牌號碼000-0000號自用小客車（下稱C車）違規停放於同路段116號前紅線處，遮蔽原告視線，致無法看見斜停於C車前方王俊傑所駕駛且正在執行拖吊機車業務之車牌號碼000-0000號拖吊車（下稱B車）將車尾拖板起落架放下，且王俊傑亦未於車後適當位置設置警告標誌，導致原告行經C車後，始發現B車之起落架放置於原告行進路線上，不及閃避而發生擦撞（下稱系爭事故）。
  又王俊傑受僱於王俊楠即楠德車業工作室，而B車車身上漆有「TMS」字樣（即全鋒公司之英文名稱縮寫），且係因執行拖吊業務而發生系爭事故，王俊楠、全鋒公司均應分別就王俊傑之侵權行為負僱用人責任。"
 """
-def get_case_type(user_input):
-    score={"單純原被告各一":0,"數名原告":0,"數名被告":0,"原被告皆數名":0,"§187未成年案型":0,"§188僱用人案型":0,"§190動物案型":0}
-    filtered_input = generate_filter(user_input)
-    top_k=3
-    l = query_faiss(filtered_input,top_k=top_k)
-    for i in range(top_k):
-        #print(f"id:{l[i]["id"]}")
-        #print(f"text:{l[i]["text"]}")
-        dist=l[i]["distance"]
-        #print(f"dist:{dist}")
-        case_type=get_type_for_case(l[i]["id"])
-        print(f"type:{case_type}")
-        score[case_type] += 300 - dist
-    max_key = max(score, key=score.get)
-    return max_key
-#print(get_case_type(user_input))
