@@ -123,7 +123,6 @@ def query_faiss(input_text: str, case_type: str, top_k: int = 5) -> List[Dict[st
         })
     return results
 
-
 def find_case_type_by_case_id(tx, case_id):
     query = (
         "MATCH (t:案件類型)-[:所屬案件]->(c:案件 {case_id: $case_id}) "
@@ -135,7 +134,6 @@ def find_case_type_by_case_id(tx, case_id):
         return record["case_type"]
     else:
         return None
-
 
 def get_type_for_case(case_id):
     with driver.session() as session:
