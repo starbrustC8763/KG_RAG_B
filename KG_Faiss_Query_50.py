@@ -10,9 +10,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Neo4j 配置
-uri = os.getenv("NEO4J_URI_B")
+uri = os.getenv("NEO4J_URI_50")
 username = os.getenv("NEO4J_USERNAME")
-password = os.getenv("NEO4J_PASSWORD_B")
+password = os.getenv("NEO4J_PASSWORD_50")
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # 索引保存路徑

@@ -11,9 +11,9 @@ import time
 load_dotenv()
 
 # 連接到 Neo4j 資料庫，請確保 .env 中定義了 NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD
-uri = os.getenv("NEO4J_URI_A")
+uri = os.getenv("NEO4J_URI_3068")
 username = os.getenv("NEO4J_USERNAME")
-password = os.getenv("NEO4J_PASSWORD_A")
+password = os.getenv("NEO4J_PASSWORD_3068")
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # 建立或合併 案件類型 節點
