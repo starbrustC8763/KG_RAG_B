@@ -1,17 +1,11 @@
 import pandas as pd
-from define_case_type import generate_case_type
-import re
-df = pd.read_excel("data.xlsx")
-case_id = 1
-score = 0
+from get_closest_case import get_closest_case
+df = pd.read_excel("data_50.xlsx")
 for index, row in df.iterrows():
-    sim_input = row.iloc[1]
-    match = re.search(r'一、(.*?)二、(.*?)三、(.*)', sim_input, re.S)
-    user_input = match.group(1).strip()
-    case_type = generate_case_type(user_input)
+    sim_input = row.iloc[0]
+    cases=get_closest_case(sim_input)
+    ids=[]
+    for case in cases:
+        ids.append(case["id"])
     with open("test_result.txt", "a", encoding="utf-8") as f:
-        f.write(f"{case_type}\n")
-    if case_type == row.iloc[0]:
-        score += 1
-    case_id += 1
-print(f"正確率:{score/49}")
+        f.write(f"{ids}\n")
