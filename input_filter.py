@@ -2,13 +2,14 @@ from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_ollama import OllamaLLM
 import re
-def generate_filter(sim_input):
+# 主函式：根據模擬輸入，回傳清洗後的描述（包含原被告姓名、是否為未成年、是否為受僱人、是否由動物造成）
+def generate_filter(sim_input: str) -> str:
     match = re.search(r'一、(.*?)二、(.*?)三、(.*)', sim_input, re.S)
     user_input = match.group(1).strip()
     filted=get_people(user_input)+"\n"+get_187(user_input)+"\n"+get_188(user_input)+"\n"+get_190(user_input)+"\n"
     return filted
-
-def get_187(user_input):
+# 判斷是否為未成年人 (§187)
+def get_187(user_input: str) -> str:
     llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",
                     temperature=0,
                     keep_alive=0,
@@ -36,8 +37,8 @@ def get_187(user_input):
     })
     #print(filtered_input)
     return filtered_input
-
-def get_188(user_input):
+# 判斷是否為受僱人 (§188)
+def get_188(user_input: str) -> str:
     llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",
                     temperature=0,
                     keep_alive=0,
@@ -65,8 +66,9 @@ def get_188(user_input):
     })
     #print(filtered_input)
     return filtered_input
+# 判斷是否為動物造成 (§190)
+def get_190(user_input: str) -> str:
 
-def get_190(user_input):
     llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",
                     temperature=0,
                     keep_alive=0,
@@ -94,8 +96,8 @@ def get_190(user_input):
     })
     #print(filtered_input)
     return filtered_input
-
-def get_people(user_input):
+# 擷取原告與被告姓名
+def get_people(user_input: str) -> str:
     llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",
                     temperature=0,
                     keep_alive=0,
