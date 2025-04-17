@@ -1,8 +1,8 @@
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_ollama import OllamaLLM
-from input_filter import generate_filter
 from define_case_type import get_case_type
+import re
 s="""
 一、事故發生緣由:
 被告甲○○係民國00年0月00日生，為12歲以上未滿18歲之人。甲○○於112年6月23日上午10時3分許，駕駛微型電動二輪車（下稱A車），沿臺南市永康區富強路1段由南往北方向行駛，行經富強路1段350號前時，本應注意慢車不得侵入快車道行駛，而依當時狀況，並無不能注意之情事，竟疏未注意而行駛內側快車道，適有原告駕駛車牌號碼000-000號普通輕型機車（下稱B車），於車道中停等，欲由東往西跨越車道，未看清來往車輛，致二車發生碰撞；又甲○○於本件車禍事故發生時之112年6月23日，已年滿14歲，為未滿18歲之限制行為能力人，且有識別能力，應由其法定代理人即被告乙○○與甲○○負連帶損害賠償責任。
@@ -26,7 +26,40 @@ s="""
 （五）精神慰撫金
 原告為國中畢業，於本件車禍事故發生前即已退休，每月領取勞保退休金1萬2,000元，無存款及負債，查原告因本件車禍事故，受有雙下肢大片撕脫傷、骨盆骨折等傷勢，經急診、住院接受雙下肢原位植皮重建手術，及多次門診治療，且原告於受傷治療及休養期間，應對於其行動、生活均造成諸多不便，原告精神上因此受有相當痛苦，爰請求精神慰撫金20萬元，以資慰藉。
 """
-def generate_fact(user_input):
-    filted=generate_filter(user_input)
-    case_type=get_case_type(filted)
-    
+llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",temperature=0.1,keep_alive=0)
+def generate_fact(input_data):
+    fact_template = PromptTemplate(
+    input_variables=["case_facts"],
+    template="""
+你是一個台灣原告律師，你要撰寫一份車禍起訴狀，但你只需要根據下列格式進行輸出，並確保每個段落內容完整：
+事實概述：完整描述事故經過，事件結果盡量越詳細越好，要使用"緣被告"做開頭，並且在這段中都要以"原告""被告"作人物代稱，如果我給你的案件事實中沒有出現原告或被告的姓名，則請直接使用"原告""被告"作為代稱，請絕對不要自己憑空杜撰被告的姓名
+### 案件事實：
+{case_facts}
+"""
+)
+    # 創建 LLMChain
+    llm_chain = LLMChain(llm=llm, prompt=fact_template)
+    # 傳入數據生成起訴書
+    lawsuit_draft = llm_chain.run({
+        "case_facts": input_data,
+    })
+    return lawsuit_draft
+
+
+def split_input(user_input):
+    sections = re.split(r"(一、|二、|三、)", user_input)
+    input_dict = {
+        "case_facts": sections[2].strip(),
+        "injury_details": sections[4].strip(),
+        "compensation_request": sections[6].strip()
+    }
+    return input_dict
+
+def generate_lawsuit(user_input):
+    input_dict = split_input(user_input)
+    case_type=get_case_type(user_input)
+    case_facts = input_dict["case_facts"]
+    fact=generate_fact(case_facts)
+    print("事實概述：", fact)
+
+generate_fact(s)
