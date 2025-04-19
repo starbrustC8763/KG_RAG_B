@@ -103,6 +103,7 @@ def generate_lawsuit(user_input):
     legal=generate_legal(input_dict["case_facts"], case_type)
     print(legal)
     print()
+    return fact+"\n\n"+legal
 start_time = time.time()  # 記錄開始時間
 generate_lawsuit(s)
 end_time = time.time()  # 記錄結束時間
