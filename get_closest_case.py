@@ -1,4 +1,3 @@
-from define_case_type import get_case_type
 from KG_Faiss_Query_3068 import query_faiss
 s="""
 一、事故發生緣由:
@@ -20,10 +19,9 @@ s="""
  
  綜上所述，原告依據民法第184條第1項前段、第191條之2、第193條第1項及第195條第1項前段之規定，請求被告賠償上述損害，總計317,834元及自起訴狀繕本送達翌日起至清償日止，按年息5%計算之利息。
 """
-def get_closest_case(s):
-    case_type=get_case_type(s)
-    q=query_faiss(s, case_type, top_k=3)
+def get_closest_case(s,case_type,top_k=1):
+    q=query_faiss(s, case_type, top_k=top_k)
     print(case_type)
-    for i in q:
-        print(f"ID:{i['id']}\nText:{i['text']}\nDistance:{i['distance']}")
+    #for i in q:
+        #print(f"ID:{i['id']}\nText:{i['text']}\nDistance:{i['distance']}")
     return q
