@@ -34,7 +34,7 @@ fact_template = PromptTemplate(
     template="""
 你是一個台灣原告律師，你要撰寫一份車禍起訴狀，但你只需要根據下列格式進行輸出，並確保每個段落內容完整：
 事實概述：完整描述事故經過，事件結果盡量越詳細越好，要使用"緣被告"做開頭，並且在這段中都要以"原告""被告"作人物代稱，如果我給你的案件事實中沒有出現原告或被告的姓名，則請直接使用"原告""被告"作為代稱，請絕對不要自己憑空杜撰被告的姓名
-備註:這個段落並不需要寫出任何賠償相關的資訊
+備註:請絕對不要寫出任何賠償相關的資訊
 ### 案件事實：
 {case_facts}
 """
@@ -50,6 +50,45 @@ legal_template = PromptTemplate(
   {legal_references}
   ### 案件事實：
   {case_facts}
+"""
+)
+comp_promt=PromptTemplate(
+    input_variables=["injury_details", "compensation_request"],
+    template="""
+你是一個台灣原告律師，你要幫助原告整理賠償資訊，你只需要根據下列格式進行輸出，並確保每個段落內容完整：
+要確保完全照著模板的格式輸出。
+損害項目：列出所有損害項目的金額，並說明對應事實。
+  模板：
+    損害項目名稱： [損害項目描述]
+    金額： [金額數字] 元
+    事實根據： [描述此損害項目的原因和依據]
+    備註:如果有多名原告，需要針對每一位原告列出損害項目
+    範例:
+    原告A部分:
+    損害項目名稱1：...
+    金額:..
+    事實根據：...
+    損害項目名稱2：...
+    金額:..
+    事實根據：...
+    原告B分:
+    損害項目名稱1：...
+    金額:..
+    事實根據：...
+    損害項目名稱2：...
+    金額:..
+    事實根據：...
+總賠償金額：需要將每一項目的金額列出來並總結所有損害項目，計算總額，並簡述賠償請求的依據。
+  模板:
+    損害項目總覽：
+    總賠償金額： [總金額] 元
+    賠償依據：
+    依據 [法律條文] 規定，本案中 [被告行為] 對原告造成 [描述損害]，被告應負賠償責任。總賠償金額為 [總金額] 元。
+ ### 受傷情形：
+{injury_details}
+### 賠償請求：
+{compensation_request}
+備註:請盡量不要使用#字號
 """
 )
 llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",temperature=0.1,keep_alive=0)
@@ -83,6 +122,16 @@ def generate_legal(input_data, case_type):
     })
     return lawsuit_draft
 
+def generate_comp(user_input):
+    input_data=split_input(user_input)
+    llm_chain = LLMChain(llm=llm, prompt=comp_promt)
+    # 傳入數據生成起訴書
+    lawsuit_draft = llm_chain.run({
+        "injury_details": input_data["injury_details"],
+        "compensation_request": input_data["compensation_request"]
+    })
+    return lawsuit_draft
+
 def split_input(user_input):
     sections = re.split(r"(一、|二、|三、)", user_input)
     input_dict = {
@@ -92,20 +141,26 @@ def split_input(user_input):
     }
     return input_dict
 
-
 def generate_lawsuit(user_input):
+    start_time = time.time()  # 記錄開始時間
     input_dict = split_input(user_input)
     case_type=get_case_type(user_input)
     case_facts = input_dict["case_facts"]
     fact=generate_fact(case_facts)
-    print(fact)
-    print()
+    #print(fact)
+    #print()
     legal=generate_legal(input_dict["case_facts"], case_type)
-    print(legal)
-    print()
-    return fact+"\n\n"+legal
-start_time = time.time()  # 記錄開始時間
-generate_lawsuit(s)
-end_time = time.time()  # 記錄結束時間
-execution_time = end_time - start_time  # 計算執行時間
-print(f"執行時間: {execution_time} seconds")
+    #print(legal)
+    #print()
+    comp=generate_comp(user_input)
+    end_time = time.time()  # 記錄結束時間
+    execution_time = end_time - start_time  # 計算執行時間
+    print(f"執行時間: {execution_time} seconds")
+    return fact+"\n\n"+legal+"\n\n"+comp
+
+#start_time = time.time()  # 記錄開始時間
+#l=generate_lawsuit(s)
+#print(l)
+#end_time = time.time()  # 記錄結束時間
+#execution_time = end_time - start_time  # 計算執行時間
+#print(f"執行時間: {execution_time} seconds")
