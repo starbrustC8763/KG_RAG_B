@@ -5,7 +5,7 @@ import faiss
 import os
 from typing import List, Dict, Tuple, Any
 from dotenv import load_dotenv
-
+from functools import lru_cache
 # 加載 .env 配置
 load_dotenv()
 
@@ -18,6 +18,7 @@ driver = GraphDatabase.driver(uri, auth=(username, password))
 # 索引保存路徑
 INDEX_PATH = "case_index_3068"
 
+MAX_CACHE_SIZE = 5  # 最多 cache 幾個索引
 # 初始化嵌入模型
 model = SentenceTransformer("shibing624/text2vec-base-chinese")
 
@@ -71,26 +72,17 @@ def build_faiss_indexes() -> Dict[str, Tuple[faiss.IndexHNSWFlat, List[str], Lis
 
     return indexes
 
-def load_faiss_index(case_type: str) -> Tuple[faiss.IndexHNSWFlat, List[str], List[str]]:
-    """
-    加載指定 case_type 的 FAISS 索引和對應的元數據。如果索引不存在，則構建索引。
-
-    Args:
-        case_type (str): 案件類型。
-
-    Returns:
-        Tuple[faiss.IndexHNSWFlat, List[str], List[str]]: FAISS 索引，案件 ID 列表，事故緣由文本列表。
-    """
+# 使用 LRU cache，最多保留 5 個索引在記憶體中
+@lru_cache(maxsize=MAX_CACHE_SIZE)
+def load_faiss_index_cached(case_type: str) -> Tuple[faiss.IndexHNSWFlat, List[str], List[str]]:
     index_path = os.path.join(INDEX_PATH, f"{case_type}_index.faiss")
     metadata_path = os.path.join(INDEX_PATH, f"{case_type}_metadata.npy")
 
     if os.path.exists(index_path) and os.path.exists(metadata_path):
-        # 從磁盤加載索引
         index = faiss.read_index(index_path)
         metadata = np.load(metadata_path, allow_pickle=True).item()
         return index, metadata["case_ids"], metadata["reason_texts"]
     else:
-        # 索引不存在時構建索引
         indexes = build_faiss_indexes()
         return indexes.get(case_type, (None, [], []))
 
@@ -107,7 +99,7 @@ def query_faiss(input_text: str, case_type: str, top_k: int = 5) -> List[Dict[st
         List[Dict[str, Any]]: 包含最相似事實的 ID、文本和距離的列表。
     """
     query_embedding = np.array([model.encode(input_text)], dtype="float32")
-    index, case_ids, reason_texts = load_faiss_index(case_type)
+    index, case_ids, reason_texts = load_faiss_index_cached(case_type)
 
     if index is None:
         return []
@@ -141,9 +133,3 @@ def get_type_for_case(case_id):
     with driver.session() as session:
         case_type = session.execute_read(find_case_type_by_case_id, case_id)
         return case_type
-
-user_input="""
-text: "事故發生緣由:
- 原告於106年8月5日凌晨騎乘車牌號碼000-000號普通重型機車（下稱A車），沿臺北市松山區南京東路5段由西往東方向之第4車道行駛，因訴外人康家誠將車牌號碼000-0000號自用小客車（下稱C車）違規停放於同路段116號前紅線處，遮蔽原告視線，致無法看見斜停於C車前方王俊傑所駕駛且正在執行拖吊機車業務之車牌號碼000-0000號拖吊車（下稱B車）將車尾拖板起落架放下，且王俊傑亦未於車後適當位置設置警告標誌，導致原告行經C車後，始發現B車之起落架放置於原告行進路線上，不及閃避而發生擦撞（下稱系爭事故）。
- 又王俊傑受僱於王俊楠即楠德車業工作室，而B車車身上漆有「TMS」字樣（即全鋒公司之英文名稱縮寫），且係因執行拖吊業務而發生系爭事故，王俊楠、全鋒公司均應分別就王俊傑之侵權行為負僱用人責任。"
-"""
