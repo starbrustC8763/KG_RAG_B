@@ -6,6 +6,7 @@ import os
 from typing import List, Dict, Tuple, Any
 from dotenv import load_dotenv
 from functools import lru_cache
+from Neo4j_Query import get_type_for_case
 # 加載 .env 配置
 load_dotenv()
 
@@ -116,20 +117,4 @@ def query_faiss(input_text: str, case_type: str, top_k: int = 5) -> List[Dict[st
     return results
 
 
-def find_case_type_by_case_id(tx, case_id):
-    query = (
-        "MATCH (t:案件類型)-[:所屬案件]->(c:案件 {case_id: $case_id}) "
-        "RETURN t.name AS case_type"
-    )
-    result = tx.run(query, case_id=case_id)
-    record = result.single()
-    if record:
-        return record["case_type"]
-    else:
-        return None
 
-
-def get_type_for_case(case_id):
-    with driver.session() as session:
-        case_type = session.execute_read(find_case_type_by_case_id, case_id)
-        return case_type

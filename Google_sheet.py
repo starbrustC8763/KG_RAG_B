@@ -1,4 +1,5 @@
-from get_closest_case import get_closest_case
+from KG_Faiss_Query_3068 import query_faiss
+from define_case_type import get_case_type
 from Neo4j_Query import get_siminput_case,get_simoutput_case
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
@@ -39,7 +40,8 @@ def read_and_write_sheets():
         print(f"正在处理第 {i} 行数据...")
         try:
             # 获取最相近的案件
-            closest_cases = get_closest_case(user_input)
+            case_type=get_case_type(user_input)
+            closest_cases = query_faiss(user_input,case_type)
             case_ids = [case["id"] for case in closest_cases]
             c = [str(x) for x in case_ids]
             case_ids_str = ",".join(c)

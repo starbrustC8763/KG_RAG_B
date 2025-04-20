@@ -5,7 +5,8 @@ import faiss
 import os
 from typing import List, Dict, Tuple, Any
 from dotenv import load_dotenv
-
+from functools import lru_cache
+from Neo4j_Query import get_type_for_case
 # 加載 .env 配置
 load_dotenv()
 
@@ -17,7 +18,7 @@ driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # 索引保存路徑
 INDEX_PATH = "case_index_50"
-
+MAX_CACHE_SIZE = 5  # 最多 cache 幾個索引
 # 初始化嵌入模型
 model = SentenceTransformer("shibing624/text2vec-base-chinese")
 
@@ -71,26 +72,17 @@ def build_faiss_indexes() -> Dict[str, Tuple[faiss.IndexHNSWFlat, List[str], Lis
 
     return indexes
 
-def load_faiss_index(case_type: str) -> Tuple[faiss.IndexHNSWFlat, List[str], List[str]]:
-    """
-    加載指定 case_type 的 FAISS 索引和對應的元數據。如果索引不存在，則構建索引。
-
-    Args:
-        case_type (str): 案件類型。
-
-    Returns:
-        Tuple[faiss.IndexHNSWFlat, List[str], List[str]]: FAISS 索引，案件 ID 列表，事故緣由文本列表。
-    """
+# 使用 LRU cache，最多保留 5 個索引在記憶體中
+@lru_cache(maxsize=MAX_CACHE_SIZE)
+def load_faiss_index_cached(case_type: str) -> Tuple[faiss.IndexHNSWFlat, List[str], List[str]]:
     index_path = os.path.join(INDEX_PATH, f"{case_type}_index.faiss")
     metadata_path = os.path.join(INDEX_PATH, f"{case_type}_metadata.npy")
 
     if os.path.exists(index_path) and os.path.exists(metadata_path):
-        # 從磁盤加載索引
         index = faiss.read_index(index_path)
         metadata = np.load(metadata_path, allow_pickle=True).item()
         return index, metadata["case_ids"], metadata["reason_texts"]
     else:
-        # 索引不存在時構建索引
         indexes = build_faiss_indexes()
         return indexes.get(case_type, (None, [], []))
 
@@ -107,7 +99,7 @@ def query_faiss(input_text: str, case_type: str, top_k: int = 5) -> List[Dict[st
         List[Dict[str, Any]]: 包含最相似事實的 ID、文本和距離的列表。
     """
     query_embedding = np.array([model.encode(input_text)], dtype="float32")
-    index, case_ids, reason_texts = load_faiss_index(case_type)
+    index, case_ids, reason_texts = load_faiss_index_cached(case_type)
 
     if index is None:
         return []
@@ -123,22 +115,6 @@ def query_faiss(input_text: str, case_type: str, top_k: int = 5) -> List[Dict[st
         })
     return results
 
-def find_case_type_by_case_id(tx, case_id):
-    query = (
-        "MATCH (t:案件類型)-[:所屬案件]->(c:案件 {case_id: $case_id}) "
-        "RETURN t.name AS case_type"
-    )
-    result = tx.run(query, case_id=case_id)
-    record = result.single()
-    if record:
-        return record["case_type"]
-    else:
-        return None
-
-def get_type_for_case(case_id):
-    with driver.session() as session:
-        case_type = session.execute_read(find_case_type_by_case_id, case_id)
-        return case_type
 
 user_input="""
 text: "事故發生緣由:

@@ -77,3 +77,21 @@ def get_statute_id(legal_text):
         normalized_ref = normalize_statute_reference(ref)
         statute_ids.append(f"民法第{normalized_ref}")
     return statute_ids
+
+def find_case_type_by_case_id(tx, case_id):
+    query = (
+        "MATCH (t:案件類型)-[:所屬案件]->(c:案件 {case_id: $case_id}) "
+        "RETURN t.name AS case_type"
+    )
+    result = tx.run(query, case_id=case_id)
+    record = result.single()
+    if record:
+        return record["case_type"]
+    else:
+        return None
+
+
+def get_type_for_case(case_id):
+    with driver.session() as session:
+        case_type = session.execute_read(find_case_type_by_case_id, case_id)
+        return case_type

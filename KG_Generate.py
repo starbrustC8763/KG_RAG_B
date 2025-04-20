@@ -2,7 +2,7 @@ from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_ollama import OllamaLLM
 from define_case_type import get_case_type
-from get_closest_case import get_closest_case
+from KG_Faiss_Query_3068 import query_faiss
 from Neo4j_Query import get_statude_case
 import re
 import time
@@ -94,7 +94,6 @@ comp_promt=PromptTemplate(
 )
 llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q8_0",temperature=0.1,keep_alive=0)
 def generate_fact(input_data):
-
     # 創建 LLMChain
     llm_chain = LLMChain(llm=llm, prompt=fact_template)
     # 傳入數據生成起訴書
@@ -107,7 +106,7 @@ def generate_legal(input_data, case_type):
      # 創建 LLMChain
     llm_chain = LLMChain(llm=llm, prompt=legal_template)
     # 查詢最相似的案件
-    closest_cases = get_closest_case(input_data, case_type)
+    closest_cases = query_faiss(input_data, case_type,1)
     ids=[i['id'] for i in closest_cases]
     legal_references = []
     for i in ids:

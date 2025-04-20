@@ -1,9 +1,11 @@
 import pandas as pd
-from get_closest_case import get_closest_case
+from define_case_type import get_case_type
+from KG_Faiss_Query_3068 import query_faiss
 df = pd.read_excel("data_50.xlsx")
 for index, row in df.iterrows():
     sim_input = row.iloc[0]
-    cases=get_closest_case(sim_input)
+    case_type=get_case_type(sim_input)
+    cases=query_faiss(sim_input,case_type)
     ids=[]
     for case in cases:
         ids.append(case["id"])
