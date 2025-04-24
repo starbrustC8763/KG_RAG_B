@@ -6,7 +6,8 @@ import os
 from typing import List, Dict, Tuple, Any
 from dotenv import load_dotenv
 from functools import lru_cache
-from Neo4j_Query import get_type_for_case
+from Neo4j_Query import get_type_for_case,get_simoutput_case
+from KG_RAG_B.define_case_type import get_case_type
 # 加載 .env 配置
 load_dotenv()
 
@@ -116,5 +117,16 @@ def query_faiss(input_text: str, case_type: str, top_k: int = 5) -> List[Dict[st
         })
     return results
 
-
+def query_simulation(input_text):
+    # 1. 查詢最相近的 "模擬輸入"
+    print("在faiss中查詢5個模擬輸入")
+    case_type=get_case_type(input_text)
+    sim_inputs = query_faiss(input_text, case_type, top_k=5)
+    # 2. 查詢對應的 "模擬輸出"
+    print("在neo4j中找到對應的起訴狀")
+    results = []
+    for sim_input in sim_inputs:
+        sim_outputs = get_simoutput_case(int(sim_input["id"]))
+        results.append(sim_outputs)
+    return results
 
